@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  keycloak-poc_flutter:
+    container_name: keycloak-poc_flutter
+    image: jboss/keycloak:12.0.3
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      #- KEYCLOAK_IMPORT=/tmp/realm-export.json
+    ports:
+      - "8081:8080"
+    #volumes:
+      #- ./keycloak-docker/realm-export.json:/tmp/realm-export.json
