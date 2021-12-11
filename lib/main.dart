@@ -57,11 +57,18 @@ class _MyHomePageState extends State<MyHomePage> {
   IconData icon = Icons.add;
   Auth auth = Auth();
 
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => checkAuth());
+  }
+
+  void checkAuth() async {
+    await auth.authenticate();
+  }
 
   void _incrementCounter() async {
 
-    var profile = await auth.authenticate();
-    developer.log(profile.toString());
 
     setState(() {
       if(_counter < _limit) {
