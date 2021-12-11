@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
+import 'auth.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,8 +55,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final int _limit = 5;
   String text = '';
   IconData icon = Icons.add;
+  Auth auth = Auth();
 
-  void _incrementCounter() {
+
+  void _incrementCounter() async {
+
+    var profile = await auth.authenticate();
+    developer.log(profile.toString());
+
     setState(() {
       if(_counter < _limit) {
         icon = Icons.add;
