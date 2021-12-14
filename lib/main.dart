@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import 'auth.dart';
+import 'web.auth.dart' if (dart.library.io) 'mobile.auth.dart';
+import 'config.dart';
 
-void main() {
+void main({String? env}) {
   runApp(const MyApp());
 }
 
@@ -49,6 +50,50 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+/// The base class for the different types of items the list can contain.
+abstract class ListItem {
+  /// The title line to show in a list item.
+  Widget buildTitle(BuildContext context);
+
+  /// The subtitle line, if any, to show in a list item.
+  Widget buildSubtitle(BuildContext context);
+}
+
+/// A ListItem that contains data to display a heading.
+class HeadingItem implements ListItem {
+  final String heading;
+
+  HeadingItem(this.heading);
+
+  @override
+  Widget buildTitle(BuildContext context) {
+    return Text(
+      heading,
+      style: Theme
+          .of(context)
+          .textTheme
+          .headline5,
+    );
+  }
+
+  @override
+  Widget buildSubtitle(BuildContext context) => const SizedBox.shrink();
+
+}
+
+class MessageItem implements ListItem {
+  final String sender;
+  final String body;
+
+  MessageItem(this.sender, this.body);
+
+  @override
+  Widget buildTitle(BuildContext context) => Text(sender);
+
+  @override
+  Widget buildSubtitle(BuildContext context) => Text(body);
+}
+
 class _MyHomePageState extends State<MyHomePage> {
 
   int _counter = 0;
@@ -56,22 +101,34 @@ class _MyHomePageState extends State<MyHomePage> {
   String text = '';
   IconData icon = Icons.add;
   Auth auth = Auth();
+  final items = List<ListItem>.generate(
+    1000,
+        (i) => i % 6 == 0
+        ? HeadingItem('Heading $i')
+        : MessageItem('Sender $i', 'Message body $i'),
+    );
 
   void initState() {
     super.initState();
-    WidgetsBinding.instance!
-        .addPostFrameCallback((_) => checkAuth());
+    WidgetsBinding.instance!.addPostFrameCallback((_) => checkAuth());
   }
 
-  void checkAuth() async {
-    await auth.authenticate();
+  checkAuth() async {
+
+    await auth.init(await Config.forEnvironment("dev"));
+    var info = await auth.userInfo();
+    if (info == null) {
+      await auth.authenticate();
+    }
+
   }
 
   void _incrementCounter() async {
 
 
+
     setState(() {
-      if(_counter < _limit) {
+      if (_counter < _limit) {
         icon = Icons.add;
         text = _counter.toString();
         _counter++;
@@ -93,43 +150,32 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_alert),
-            tooltip: 'Show Snackbar',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('This is a snackbar')));
-            },
-          ),
-        ]
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(text)
-          ],
-        ),
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add_alert),
+              tooltip: 'Show Snackbar',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('This is a snackbar')));
+              },
+            ),
+          ]),
+      body: ListView.builder(
+        // Let the ListView know how many items it needs to build.
+        itemCount: items.length,
+        // Provide a builder function. This is where the magic happens.
+        // Convert each item into a widget based on the type of item it is.
+        itemBuilder: (context, index) {
+          final item = items[index];
+
+          return ListTile(
+            title: item.buildTitle(context),
+            subtitle: item.buildSubtitle(context),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
