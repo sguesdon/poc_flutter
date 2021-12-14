@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'web.auth.dart' if (dart.library.io) 'mobile.auth.dart';
@@ -96,17 +97,13 @@ class MessageItem implements ListItem {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  int _counter = 0;
-  final int _limit = 5;
-  String text = '';
-  IconData icon = Icons.add;
   Auth auth = Auth();
   final items = List<ListItem>.generate(
     1000,
-        (i) => i % 6 == 0
-        ? HeadingItem('Heading $i')
-        : MessageItem('Sender $i', 'Message body $i'),
-    );
+      (i) => i % 6 == 0
+      ? HeadingItem('Heading $i')
+      : MessageItem('Sender $i', 'Message body $i'),
+  );
 
   void initState() {
     super.initState();
@@ -114,30 +111,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   checkAuth() async {
-
     await auth.init(await Config.forEnvironment("dev"));
     var info = await auth.userInfo();
     if (info == null) {
       await auth.authenticate();
     }
-
   }
 
-  void _incrementCounter() async {
-
-
-
-    setState(() {
-      if (_counter < _limit) {
-        icon = Icons.add;
-        text = _counter.toString();
-        _counter++;
-      } else {
-        icon = Icons.remove;
-        text = 'c\'est finis';
-        _counter = 0;
-      }
-    });
+  _addFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      print(result.toString());
+    } else {
+      // User canceled the picker
+    }
   }
 
   @override
@@ -178,9 +165,9 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(icon),
+        onPressed: _addFile,
+        tooltip: 'add file',
+        child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
