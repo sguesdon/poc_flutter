@@ -1,7 +1,7 @@
 import 'package:openid_client/openid_client_io.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'config.dart';
+import '../domain/pojo/config.dart';
 
 class Auth {
 

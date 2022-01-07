@@ -1,8 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:poc_flutter/widgets/nav_drawer.dart';
 import 'dart:developer' as developer;
-import 'web.auth.dart' if (dart.library.io) 'mobile.auth.dart';
-import 'config.dart';
+import 'auth/web.auth.dart' if (dart.library.io) 'auth/mobile.auth.dart';
+import 'domain/pojo/config.dart';
 
 void main({String? env}) {
   runApp(const MyApp());
@@ -115,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const NavDrawer(),
       appBar: AppBar(
           title: Text(widget.title),
           actions: []),
